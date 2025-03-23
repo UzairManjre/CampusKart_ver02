@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="CampusKart_ver02">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/CampusKart_ver02.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
