@@ -1,5 +1,8 @@
 
 import AbstactClasses.UserDetails;
+import Database.DatabaseSetup;
+import Database.ModeratorDAO;
+import Database.UserDAO;
 import Exceptions.InsufficientStockException;
 import Exceptions.InvalidInputException;
 import Exceptions.ProductNotFoundException;
@@ -12,6 +15,9 @@ import campuskart_ver02.classes.Student;
 import campuskart_ver02.classes.Transaction;
 import java.util.List;
 import java.util.Scanner;
+
+import static Database.ModeratorDAO.addModerator;
+import static Database.StudentDAO.addStudent;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -30,6 +36,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             Storage.initializeTestData();
+            DatabaseSetup.main(new String[]{});
 
             while (true) {
                 System.out.println("\n=== CampusKart ===");
@@ -65,8 +72,6 @@ public class Main {
                             System.out.println("Exiting CampusKart. Goodbye!");
                             break;
                         }
-                    } catch (UserAlreadyExistsException e) {
-                        System.out.println("Registration failed: " + e.getMessage());
                     } catch (Exception e) {
                         System.out.println("An unexpected error occurred: " + e.getMessage());
                     }
@@ -85,56 +90,59 @@ public class Main {
         }
     }
 
-    private static void login() {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
+private static void login() {
+    System.out.print("Enter username: ");
+    String username = scanner.nextLine();
 
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+    System.out.print("Enter password: ");
+    String password = scanner.nextLine();
 
-        loggedInUser = Storage.getUserByUsername(username);
+    UserDetails user = UserDAO.loginUser(username, password);
 
-        if (loggedInUser == null || !loggedInUser.getPassword().equals(password)) {
-            System.out.println("Invalid username or password!");
-            loggedInUser = null;  // Reset login attempt
-        } else {
-            System.out.println("Welcome, " + loggedInUser.getUsername() + "!");
-        }
+    if (user != null) {
+        System.out.println("Login successful! Welcome, " + user.getUsername());
+        // You can now use user.getUserType() if needed
+    } else {
+        System.out.println("Invalid username or password. Try again.");
+    }
+}
+
+
+   private static void registerUser() {
+    System.out.print("Enter username: ");
+    String username = scanner.nextLine();
+
+    System.out.print("Enter password: ");
+    String password = scanner.nextLine();
+
+    System.out.print("Enter email: ");
+    String email = scanner.nextLine();
+
+    System.out.print("Are you registering as a Moderator or Student? (M/S): ");
+    String role = scanner.nextLine().trim().toUpperCase();
+
+    System.out.print("Enter enrollment number: ");
+    String enrollmentNumber = scanner.nextLine();
+
+    boolean success = false;
+    
+    if (role.equals("M")) {
+        success = addModerator(username, password, email, enrollmentNumber);
+    } else if (role.equals("S")) {
+        Student student = new Student(username, password, email, enrollmentNumber);
+        success = addStudent(student);
+    } else {
+        System.out.println("Invalid choice. Registration failed.");
+        return;
     }
 
-    private static void registerUser() throws UserAlreadyExistsException {
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-
-        if (Storage.getUserByUsername(username) != null) {
-            throw new UserAlreadyExistsException("Username '" + username + "' is already taken! Try another one.");
-        }
-
-        System.out.print("Enter enrollment number: ");
-        String enrollmentNumber = scanner.nextLine();
-
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-
-        System.out.print("Enter email: ");
-        String email = scanner.nextLine();
-
-        System.out.print("Are you a Student or Moderator? (S/M): ");
-        String userType = scanner.nextLine().trim().toUpperCase();
-
-        UserDetails newUser;
-        if (userType.equals("S")) {
-            newUser = new Student(username, enrollmentNumber, password, email);
-        } else if (userType.equals("M")) {
-            newUser = new Moderator(username, enrollmentNumber, password, email);
-        } else {
-            System.out.println("Invalid user type!");
-            return;
-        }
-
-        Storage.addUser(newUser);
-        System.out.println("User registered successfully! You can now log in.");
+    if (success) {
+        System.out.println("Registration successful!");
+    } else {
+        System.out.println("Registration failed. Try again.");
     }
+}
+
 
 
     private static void showMenu() {

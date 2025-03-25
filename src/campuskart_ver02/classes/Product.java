@@ -19,15 +19,25 @@ public class Product extends ProductDetails implements ProductAction {
 
     public Product(String productName, String description, double price, String category, int quantity, Student seller) {
         super(productName, description, price, category, quantity, seller);
-        this.productId = ++productCounter;  // Assign unique ID and increment counter
     }
-
+    public Product(int productId,String productName, String description, double price, String category, int quantity, Student seller) {
+        super(productName, description, price, category, quantity, seller);
+        this.productId = productId;
+    }
     @Override
     public void addProduct() {
         System.out.println("Product added: " + productName);
 
     }
 
+    @Override
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
 
 
     @Override
@@ -57,11 +67,6 @@ public class Product extends ProductDetails implements ProductAction {
     public void sellProduct() {
         quantity++;
         System.out.println("Product restocked: " + productName);
-    }
-
-    @Override
-    public int getProductId() {
-        return productId;
     }
 
     public Student getSeller() {

@@ -15,8 +15,22 @@ import Interfaces.UserAction;
 
 // Student class - Can Buy, Sell, Update, Delete own products
 public class Student extends UserDetails implements UserAction {
+     private int clientId;
     public Student(String username, String enrollmentNumber, String password, String email) {
         super(username, enrollmentNumber, password, email, "Student");
+    }
+    public Student(int clientId,String username, String enrollmentNumber, String password, String email) {
+        super(username, enrollmentNumber, password, email, "Student");
+        this.clientId = clientId;
+    }
+      public int getClientId() {
+        return clientId;
+    }
+    
+     
+      
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
     }
 
     @Override
@@ -54,4 +68,12 @@ public class Student extends UserDetails implements UserAction {
     }
 
     public String getUsername() {return username;}
+
+    public String getEmail() {
+            return email;
+    }
+
+    public String getEnrollmentNumber() {
+        return enrollmentNumber;
+    }
 }
