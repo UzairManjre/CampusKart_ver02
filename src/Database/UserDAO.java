@@ -44,24 +44,26 @@ public class UserDAO {
             return false;
         }
     }
-    
-     public static UserDetails loginUser(String username, String password) {
-        String query = "SELECT * FROM User WHERE username = ? AND password = ?";
+
+    public static UserDetails loginUser(String username, String password) {
+        String userQuery = "SELECT username, email FROM User WHERE username = ? AND password = ?";
 
         try (Connection conn = DatabaseConnection.initializeDB();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement pstmt = conn.prepareStatement(userQuery)) {
 
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                String enrollmentNumber = rs.getString("enrollment_number");
                 String email = rs.getString("email");
+                String enrollmentNumber = null;
 
                 if (isStudent(username)) {
+                    enrollmentNumber = getEnrollmentNumber(username, "Client");
                     return new Student(username, enrollmentNumber, password, email);
                 } else if (isModerator(username)) {
+                    enrollmentNumber = getEnrollmentNumber(username, "Moderator");
                     return new Moderator(username, enrollmentNumber, password, email);
                 } else {
                     System.out.println("User found, but role not recognized.");
@@ -73,8 +75,28 @@ public class UserDAO {
         return null; // Login failed
     }
 
+    // Helper method to get enrollment number from the respective table
+    private static String getEnrollmentNumber(String username, String tableName) {
+        String query = "SELECT enrollment_number FROM " + tableName + " WHERE username = ?";
+
+        try (Connection conn = DatabaseConnection.initializeDB();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("enrollment_number");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching enrollment number: " + e.getMessage());
+        }
+        return null;
+    }
+
+
     private static boolean isStudent(String username) {
-        String query = "SELECT username FROM Student WHERE username = ?";
+        String query = "SELECT username FROM client WHERE username = ?";
         return checkRole(username, query);
     }
 

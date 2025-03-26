@@ -22,10 +22,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Database.StudentDAO.getStudentById;
+
 public class ProductDAO {
     
     public static boolean addProduct(Product product) {
         String insertProductQuery = "INSERT INTO Products (pname, pdesc, p_price, qty, category, status, s_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        System.out.println("Seller ID: " + product.getSeller().getClientId());
 
         try (Connection conn = DatabaseConnection.initializeDB();
              PreparedStatement pstmt = conn.prepareStatement(insertProductQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -57,14 +60,23 @@ public class ProductDAO {
   public static List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
         String query = "SELECT * FROM Products";
-
+//      System.out.println("______________________________________________________________-");
         try (Connection conn = DatabaseConnection.initializeDB();
              PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
-
+//            System.out.println("++++++++++++++++++++++++");
             while (rs.next()) {
                 int sellerId = rs.getInt("s_id");
+                System.out.println(sellerId);
+//                System.out.println("++++++++++++++++++++++++");
                 Student seller = getStudentById(sellerId); // Fetch full seller details
+                if (seller == null) {
+                    System.err.println("Warning: No seller found for ID " + sellerId);
+                    continue; // Skip this product if no seller found
+                }
+
+                System.out.println("Fetching seller for ID: " + sellerId);
+
 
                 Product product = new Product(
                     rs.getInt("pr_id"),
@@ -112,6 +124,23 @@ public class ProductDAO {
         }
         return null;
     }
+    public static boolean updateProductQuantity(int productId, int newQuantity) {
+        String updateQuery = "UPDATE Products SET qty = ? WHERE pr_id = ?";
+
+        try (Connection conn = DatabaseConnection.initializeDB();
+             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+            pstmt.setInt(1, newQuantity);
+            pstmt.setInt(2, productId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating product quantity: " + e.getMessage());
+            return false;
+        }
+    }
 
     // Method to fetch all products by a specific seller
     public static List<Product> getProductsBySeller(int sellerId) {
@@ -143,7 +172,5 @@ public class ProductDAO {
         return products;
     }
 
-    private static Student getStudentById(int sellerId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+
 }

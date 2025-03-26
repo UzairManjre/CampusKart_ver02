@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static String URL = "jdbc:mysql://localhost:4030/"; // Change database name if needed
+    private static String URL = "jdbc:mysql://localhost:3306/"; // Change database name if needed
     private static  String USER = "root";
     private static  String PASSWORD = "12345"; // Replace with actual password
 
@@ -17,7 +17,7 @@ public class DatabaseConnection {
 
             // Establish Connection
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Connected to MySQL Database successfully!");
+//            System.out.println("Connected to MySQL Database successfully!");
         } catch (ClassNotFoundException e) {
             System.err.println("MySQL JDBC Driver not found! " + e.getMessage());
         } catch (SQLException e) {

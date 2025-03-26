@@ -1,8 +1,6 @@
 
 import AbstactClasses.UserDetails;
-import Database.DatabaseSetup;
-import Database.ModeratorDAO;
-import Database.UserDAO;
+import Database.*;
 import Exceptions.InsufficientStockException;
 import Exceptions.InvalidInputException;
 import Exceptions.ProductNotFoundException;
@@ -18,6 +16,7 @@ import java.util.Scanner;
 
 import static Database.ModeratorDAO.addModerator;
 import static Database.StudentDAO.addStudent;
+import static campuskart_ver02.classes.Storage.addTransaction;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -97,10 +96,11 @@ private static void login() {
     System.out.print("Enter password: ");
     String password = scanner.nextLine();
 
-    UserDetails user = UserDAO.loginUser(username, password);
+    loggedInUser = UserDAO.loginUser(username, password);
 
-    if (user != null) {
-        System.out.println("Login successful! Welcome, " + user.getUsername());
+
+    if (loggedInUser != null) {
+        System.out.println("Login successful! Welcome, " + loggedInUser.getUsername());
         // You can now use user.getUserType() if needed
     } else {
         System.out.println("Invalid username or password. Try again.");
@@ -130,7 +130,7 @@ private static void login() {
         success = addModerator(username, password, email, enrollmentNumber);
     } else if (role.equals("S")) {
         Student student = new Student(username, password, email, enrollmentNumber);
-        success = addStudent(student);
+        success = addStudent(username,password, email, enrollmentNumber);
     } else {
         System.out.println("Invalid choice. Registration failed.");
         return;
@@ -248,7 +248,7 @@ private static void login() {
 
     private static void viewProducts() {
         try {
-            List<Product> products = Storage.getAllProducts();
+            List<Product> products = ProductDAO.getAllProducts();
 
             if (products.isEmpty()) {
                 System.out.println("\nNo products available.");
@@ -257,12 +257,14 @@ private static void login() {
 
             System.out.println("\nAvailable Products:");
             for (Product p : products) {
-                System.out.println(p.getProductId() + ". " + p.getProductName() + " - " + p.getPrice()+" - " + p.getQuantity());
+                System.out.println(p.getProductId() + ". " + p.getProductName() + " - " + p.getPrice() + " - " + p.getQuantity());
             }
         } catch (Exception e) {
             System.out.println("An error occurred while retrieving products: " + e.getMessage());
         }
     }
+
+
 
     private static void buyProduct() {
         try {
@@ -276,7 +278,7 @@ private static void login() {
             int productId = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
-            Product product = Storage.getProductById(productId);
+            Product product = ProductDAO.getProductById(productId);
             if (product == null) {
                 throw new ProductNotFoundException("Product with ID " + productId + " not found!");
             }
@@ -294,15 +296,11 @@ private static void login() {
             Student seller = product.getSeller();
 
             Transaction transaction = new Transaction(buyer, seller, product);
-            Storage.addTransaction(transaction);
+            addTransaction(transaction);
 
             // Decrease quantity
             product.setQuantity(product.getQuantity() - 1);
-
-            // Remove product if quantity becomes zero
-            if (product.getQuantity() == 0) {
-                Storage.removeProduct(productId);
-            }
+            ProductDAO.updateProductQuantity(productId, product.getQuantity());
 
             System.out.println("You bought " + product.getProductName() + "!");
 
@@ -349,10 +347,22 @@ private static void login() {
             int quantity = scanner.nextInt();
             scanner.nextLine();
             if (quantity <= 0) throw new InvalidInputException("Quantity must be greater than zero.");
+// Fetch the Student object using the logged-in user's username
+            Student seller = StudentDAO.getStudentByUsername(loggedInUser.getUsername());
+            if (seller == null) {
+                throw new UnauthorizedActionException("Seller not found! Please ensure you have a valid student account.");
+            }
 
-            Product newProduct = new Product(name, description, price, category, quantity, (Student) loggedInUser);
-            Storage.addProduct(newProduct);
-            System.out.println("Product added successfully!");
+// Create a new Product object with the fetched seller
+            Product newProduct = new Product(name, description, price, category, quantity, seller);
+
+            boolean success = ProductDAO.addProduct(newProduct);
+
+            if (success) {
+                System.out.println("Product added successfully!");
+            } else {
+                System.out.println("Failed to add product. Please try again.");
+            }
 
         } catch (InvalidInputException | UnauthorizedActionException e) {
             System.out.println(e.getMessage());
