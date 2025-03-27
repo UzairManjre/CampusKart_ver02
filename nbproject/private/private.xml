@@ -2,14 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Database/DatabaseConnection.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/campuskart_ver02/classes/Product.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Database/DatabaseSetup.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Database/ModeratorDAO.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Database/UserDAO.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Database/ClientDAO.java</file>
-            <file>file:/C:/Users/uzair/OneDrive/Documents/NetBeansProjects/CampusKart_ver02/src/Main.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

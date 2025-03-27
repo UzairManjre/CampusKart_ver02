@@ -36,7 +36,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            Storage.initializeTestData();
+//            Storage.initializeTestData();
             DatabaseSetup.main(new String[]{});
 
             while (true) {
