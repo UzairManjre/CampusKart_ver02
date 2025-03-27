@@ -74,7 +74,7 @@ public class StudentDAO extends UserDAO {
         return null;
     }
     public static Student getStudentById(int clientId) {
-        System.out.println("Fetching student for ID: " + clientId);  // Debug Print
+//        System.out.println("Fetching student for ID: " + clientId);  // Debug Print
 
         String query = "SELECT c_id, User.username, password, email, enrollment_number " +
                 "FROM Client JOIN User ON Client.username = User.username " +
@@ -87,7 +87,7 @@ public class StudentDAO extends UserDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                System.out.println("Student found: " + rs.getString("username"));  // Debug Print
+//                System.out.println("Student found: " + rs.getString("username"));  // Debug Print
 
                 return new Student(
                         rs.getInt("c_id"),
@@ -104,22 +104,22 @@ public class StudentDAO extends UserDAO {
         }
         return null;
     }
-    public static void main(String[] args) {
-        DatabaseSetup.main(new String[]{});
-        int testStudentId = 1; // Change this to an actual c_id from your database
-
-        System.out.println("Testing getStudentById with ID: " + testStudentId);
-        Student student = StudentDAO.getStudentById(testStudentId);
-
-        if (student != null) {
-            System.out.println("Student Retrieved Successfully:");
-            System.out.println("ID: " + student.getClientId());
-            System.out.println("Username: " + student.getUsername());
-            System.out.println("Enrollment Number: " + student.getEnrollmentNumber());
-            System.out.println("Email: " + student.getEmail());
-        } else {
-            System.out.println("No student found with ID: " + testStudentId);
-        }
-    }
+//    public static void main(String[] args) {
+//        DatabaseSetup.main(new String[]{});
+//        int testStudentId = 1; // Change this to an actual c_id from your database
+//
+//        System.out.println("Testing getStudentById with ID: " + testStudentId);
+//        Student student = StudentDAO.getStudentById(testStudentId);
+//
+//        if (student != null) {
+//            System.out.println("Student Retrieved Successfully:");
+//            System.out.println("ID: " + student.getClientId());
+//            System.out.println("Username: " + student.getUsername());
+//            System.out.println("Enrollment Number: " + student.getEnrollmentNumber());
+//            System.out.println("Email: " + student.getEmail());
+//        } else {
+//            System.out.println("No student found with ID: " + testStudentId);
+//        }
+//    }
 }
 

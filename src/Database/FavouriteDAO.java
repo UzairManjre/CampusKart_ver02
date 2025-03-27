@@ -12,10 +12,13 @@ package Database;
 
 
 import campuskart_ver02.classes.Favourite;
+import campuskart_ver02.classes.Product;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static Database.ProductDAO.getProductById;
 
 public class FavouriteDAO {
     
@@ -52,18 +55,26 @@ public class FavouriteDAO {
     }
 
     // Get all favourite products of a user
-    public List<Favourite> getFavouritesByClient(int clientId) {
-        List<Favourite> favourites = new ArrayList<>();
-        String query = "SELECT * FROM Favourites WHERE c_id = ?";
+// Get all favourite products of a user with product details
+    public List<Product> getFavouriteProductsByClient(int clientId) {
+        List<Product> favouriteProducts = new ArrayList<>();
+        String query = "SELECT p.pr_id, p.pname, p.p_price, p.pdesc " +
+                "FROM Favourites f " +
+                "JOIN Products p ON f.product_id = p.pr_id " +
+                "WHERE f.c_id = ?";
+
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, clientId);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                favourites.add(new Favourite(rs.getInt("c_id"), rs.getInt("product_id")));
+                Product product = getProductById(rs.getInt("pr_id"));
+
+                favouriteProducts.add(product);
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching favourites: " + e.getMessage());
+            System.err.println("Error fetching favourite products: " + e.getMessage());
         }
-        return favourites;
+        return favouriteProducts;
     }
+
 }

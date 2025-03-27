@@ -73,24 +73,24 @@ public class DatabaseSetup {
                     + "FOREIGN KEY (buyer_id) REFERENCES Client(c_id) ON DELETE CASCADE, "
                     + "FOREIGN KEY (seller_id) REFERENCES Client(c_id) ON DELETE CASCADE)");
 
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Payment ("
-                    + "pay_id INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "t_id INT UNIQUE NOT NULL, "
-                    + "amount DECIMAL(10,2) NOT NULL, "
-                    + "payment_status ENUM('Completed', 'Pending', 'Failed') NOT NULL DEFAULT 'Pending', "
-                    + "payment_method ENUM('Credit Card', 'UPI', 'Cash') NOT NULL, "
-                    + "pay_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                    + "FOREIGN KEY (t_id) REFERENCES Transactions(t_id) ON DELETE CASCADE)");
+//            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Payment ("
+//                    + "pay_id INT AUTO_INCREMENT PRIMARY KEY, "
+//                    + "t_id INT UNIQUE NOT NULL, "
+//                    + "amount DECIMAL(10,2) NOT NULL, "
+//                    + "payment_status ENUM('Completed', 'Pending', 'Failed') NOT NULL DEFAULT 'Pending', "
+//                    + "payment_method ENUM('Credit Card', 'UPI', 'Cash') NOT NULL, "
+//                    + "pay_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+//                    + "FOREIGN KEY (t_id) REFERENCES Transactions(t_id) ON DELETE CASCADE)");
 
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Reviews ("
-                    + "r_id INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "u_id INT NOT NULL, "
-                    + "p_id INT NOT NULL, "
-                    + "rating TINYINT CHECK (rating BETWEEN 1 AND 5), "
-                    + "comment VARCHAR(500), "
-                    + "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                    + "FOREIGN KEY (u_id) REFERENCES Client(c_id) ON DELETE CASCADE, "
-                    + "FOREIGN KEY (p_id) REFERENCES Products(pr_id) ON DELETE CASCADE)");
+//            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Reviews ("
+//                    + "r_id INT AUTO_INCREMENT PRIMARY KEY, "
+//                    + "u_id INT NOT NULL, "
+//                    + "p_id INT NOT NULL, "
+//                    + "rating TINYINT CHECK (rating BETWEEN 1 AND 5), "
+//                    + "comment VARCHAR(500), "
+//                    + "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+//                    + "FOREIGN KEY (u_id) REFERENCES Client(c_id) ON DELETE CASCADE, "
+//                    + "FOREIGN KEY (p_id) REFERENCES Products(pr_id) ON DELETE CASCADE)");
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Favourites ("
                     + "c_id INT NOT NULL, "

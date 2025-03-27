@@ -134,4 +134,19 @@ public class TransactionDAO {
         }
         return transactions;
     }
+
+    public static void main(String[] args) {
+        DatabaseSetup.main(new String[]{});
+        int buyerId = 2;
+        int sellerId = 1;
+        int productId = 5;
+
+        boolean success = TransactionDAO.addTransaction(productId, buyerId, sellerId);
+
+        if (success) {
+            System.out.println("Transaction added successfully!");
+        } else {
+            System.out.println("Transaction failed!");
+        }
+    }
 }

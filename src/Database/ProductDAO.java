@@ -71,11 +71,11 @@ public class ProductDAO {
 //                System.out.println("++++++++++++++++++++++++");
                 Student seller = getStudentById(sellerId); // Fetch full seller details
                 if (seller == null) {
-                    System.err.println("Warning: No seller found for ID " + sellerId);
+//                    System.err.println("Warning: No seller found for ID " + sellerId);
                     continue; // Skip this product if no seller found
                 }
 
-                System.out.println("Fetching seller for ID: " + sellerId);
+//                System.out.println("Fetching seller for ID: " + sellerId);
 
 
                 Product product = new Product(

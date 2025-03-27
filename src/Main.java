@@ -12,10 +12,12 @@ import campuskart_ver02.classes.Storage;
 import campuskart_ver02.classes.Student;
 import campuskart_ver02.classes.Transaction;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static Database.ModeratorDAO.addModerator;
 import static Database.StudentDAO.addStudent;
+import static Database.StudentDAO.getStudentByUsername;
 import static campuskart_ver02.classes.Storage.addTransaction;
 
 /*
@@ -160,20 +162,23 @@ private static void login() {
                 System.out.println("2. Buy Product");
                 System.out.println("3. View My Orders");
                 System.out.println("4. Add Product");
-                System.out.println("5. Logout");
+                System.out.println("5. View My Favourite Products");
+                System.out.println("6. Add Product to Favourites");
+                System.out.println("7. Remove Product from Favourites");
+                System.out.println("8. Logout");
                 System.out.print("Choose an option: ");
 
                 int choice;
                 try {
                     if (!scanner.hasNextInt()) {
                         scanner.next(); // Clear invalid input
-                        throw new InvalidInputException("Invalid input! Please enter a number between 1 and 5.");
+                        throw new InvalidInputException("Invalid input! Please enter a number between 1 and 8.");
                     }
                     choice = scanner.nextInt();
                     scanner.nextLine(); // Consume newline
 
-                    if (choice < 1 || choice > 5) {
-                        throw new InvalidInputException("Invalid choice! Please enter a number between 1 and 5.");
+                    if (choice < 1 || choice > 8) {
+                        throw new InvalidInputException("Invalid choice! Please enter a number between 1 and 8.");
                     }
                 } catch (InvalidInputException e) {
                     System.out.println(e.getMessage());
@@ -184,21 +189,28 @@ private static void login() {
                     case 1:
                         viewProducts();
                         break;
-                    case 2 : 
-                        buyProduct(); 
+                    case 2:
+                        buyProduct();
                         break;
-                    case 3 :
+                    case 3:
                         viewMyOrders();
                         break;
-                    case 4 :
+                    case 4:
                         addProduct();
                         break;
-                    case 5 :
-                    {
+                    case 5:
+                        viewFavouriteProducts();
+                        break;
+                    case 6:
+                        addToFavourites();
+                        break;
+                    case 7:
+                        removeFromFavourites();
+                        break;
+                    case 8:
                         loggedInUser = null;
                         System.out.println("Logged out successfully.");
                         return;
-                    }
                     default: throw new InvalidInputException("Unexpected error: Invalid menu choice.");
                 }
             } catch (Exception e) {
@@ -206,7 +218,6 @@ private static void login() {
             }
         }
     }
-
     private static void moderatorMenu() {
         while (true) {
             try {
@@ -292,11 +303,14 @@ private static void login() {
             }
 
             // Proceed with the purchase
-            Student buyer = (Student) loggedInUser;
-            Student seller = product.getSeller();
+
+            Student buyer = getStudentByUsername(loggedInUser.getUsername());
+            Student seller = getStudentByUsername(product.getSeller().getUsername());
 
             Transaction transaction = new Transaction(buyer, seller, product);
             addTransaction(transaction);
+            TransactionDAO.addTransaction(productId, buyer.getClientId(), seller.getClientId());
+
 
             // Decrease quantity
             product.setQuantity(product.getQuantity() - 1);
@@ -378,7 +392,8 @@ private static void login() {
                 throw new UnauthorizedActionException("You must be logged in to view your orders!");
             }
 
-            List<Transaction> orders = Storage.getMyOrders(loggedInUser.getUsername());
+            List<Transaction> orders = TransactionDAO.getUserTransactions(getStudentByUsername(loggedInUser.getUsername()).getClientId()); // Fetch transactions for the logged-in user
+
             if (orders.isEmpty()) {
                 System.out.println("\nYou have no orders.");
                 return;
@@ -396,13 +411,94 @@ private static void login() {
         }
     }
 
+
+    // Function to view favorite products
+
+
+    // Function to add a product to favourites
+    private static void addToFavourites() {
+        try {
+            if (loggedInUser == null) {
+                throw new UnauthorizedActionException("You must be logged in to add favourite products!");
+            }
+
+            System.out.print("Enter Product ID to add to favourites: ");
+            int productId = scanner.nextInt();
+            scanner.nextLine();
+
+            FavouriteDAO favouriteDAO = new FavouriteDAO();
+            if (favouriteDAO.addFavourite(getStudentByUsername(loggedInUser.getUsername()).getClientId(), productId)) {
+                System.out.println("Product added to favourites successfully!");
+            } else {
+                System.out.println("Failed to add product to favourites.");
+            }
+
+        } catch (UnauthorizedActionException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("An error occurred while adding to favourites: " + e.getMessage());
+        }
+    }
+
+    // Function to remove a product from favourites
+    private static void removeFromFavourites() {
+        try {
+            if (loggedInUser == null) {
+                throw new UnauthorizedActionException("You must be logged in to remove favourite products!");
+            }
+
+            System.out.print("Enter Product ID to remove from favourites: ");
+            int productId = scanner.nextInt();
+            scanner.nextLine();
+
+            FavouriteDAO favouriteDAO = new FavouriteDAO();
+            if (favouriteDAO.removeFavourite(Objects.requireNonNull(getStudentByUsername(loggedInUser.getUsername())).getClientId(), productId)) {
+                System.out.println("Product removed from favourites successfully!");
+            } else {
+                System.out.println("Failed to remove product from favourites.");
+            }
+
+        } catch (UnauthorizedActionException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("An error occurred while removing from favourites: " + e.getMessage());
+        }
+    }
+    private static void viewFavouriteProducts() {
+        try {
+            if (loggedInUser == null) {
+                throw new UnauthorizedActionException("You must be logged in to view your favourite products!");
+            }
+
+            FavouriteDAO favouriteDAO = new FavouriteDAO();
+            List<Product> favourites = favouriteDAO.getFavouriteProductsByClient(Objects.requireNonNull(getStudentByUsername(loggedInUser.getUsername())).getClientId());
+
+            if (favourites.isEmpty()) {
+                System.out.println("\nYou have no favourite products.");
+                return;
+            }
+
+            System.out.println("\nYour Favourite Products:");
+            for (Product p : favourites) {
+                System.out.println("ID: " + p.getProductId() + ", Name: " + p.getProductName() + ", Price: " + p.getPrice() + ", Description: " + p.getDescription());
+            }
+
+        } catch (UnauthorizedActionException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("An unexpected error occurred while retrieving favourite products: " + e.getMessage());
+        }
+    }
+
+
     private static void viewAllTransactions() {
         try {
             if (!(loggedInUser instanceof Moderator)) {
                 throw new UnauthorizedActionException("Only moderators can view all transactions!");
             }
 
-            List<Transaction> transactions = Storage.getTransactions();
+            List<Transaction> transactions = TransactionDAO.getAllTransactions(); // Fetch all transactions
+
             if (transactions.isEmpty()) {
                 System.out.println("\nNo transactions available.");
                 return;
@@ -419,5 +515,7 @@ private static void login() {
             System.out.println("An unexpected error occurred while retrieving transactions: " + e.getMessage());
         }
     }
+
+
 
 }

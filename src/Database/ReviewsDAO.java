@@ -29,7 +29,7 @@ public class ReviewsDAO {
 
     // Add a review
     public boolean addReview(int studentId, int productId, int rating, String comment) {
-        String query = "INSERT INTO Reviews (c_id, p_id, rating, comment, timestamp) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO Reviews (p_id, rating, comment, timestamp) VALUES ( ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, studentId);
             pstmt.setInt(2, productId);
