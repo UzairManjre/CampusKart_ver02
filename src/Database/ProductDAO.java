@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static Database.StudentDAO.getStudentById;
+import static Database.StudentDAO.getStudentByUsername;
 
 public class ProductDAO {
     
@@ -124,6 +125,44 @@ public class ProductDAO {
         }
         return null;
     }
+
+    public static List<Product> getProductsBySellerName(String sellerName) {
+        List<Product> products = new ArrayList<>();
+
+        String query = "SELECT p.* " +
+                "FROM Products p " +
+                "JOIN Client c ON p.s_id = c.c_id " +
+                "JOIN User u ON c.username = u.username " +
+                "WHERE u.username = ?";
+
+        try (Connection conn = DatabaseConnection.initializeDB();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, sellerName);
+            ResultSet rs = pstmt.executeQuery();
+
+            // First, get the seller object using the name
+            Student seller = getStudentByUsername(sellerName); // You must have this method defined
+
+            while (rs.next()) {
+                products.add(new Product(
+                        rs.getInt("pr_id"),
+                        rs.getString("pname"),
+                        rs.getString("pdesc"),
+                        rs.getDouble("p_price"),
+                        rs.getString("category"),
+                        rs.getInt("qty"),
+                        seller
+                ));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error fetching products by seller name: " + e.getMessage());
+        }
+
+        return products;
+    }
+
     public static boolean updateProductQuantity(int productId, int newQuantity) {
         String updateQuery = "UPDATE Products SET qty = ? WHERE pr_id = ?";
 

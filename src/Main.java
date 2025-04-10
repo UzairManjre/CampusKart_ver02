@@ -256,37 +256,87 @@ private static void login() {
             }
         }
     }
+    private static void displayProducts(List<Product> products) {
+        if (products == null || products.isEmpty()) {
+            System.out.println("No products found.");
+            return;
+        }
+
+        String format = "| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s | %-15s |%n";
+        String line = "+--------+----------------------+----------------------------------------------------+--------------+----------+----------+-----------------+";
+
+        System.out.println("\nProducts:");
+        System.out.println(line);
+        System.out.printf(format, "ID", "Product Name", "Description", "Category", "Price", "Quantity", "Seller");
+        System.out.println(line);
+
+        for (Product p : products) {
+            String sellerName = (p.getSeller() != null) ? p.getSeller().getUsername() : "N/A";
+            System.out.printf(format,
+                    p.getProductId(),
+                    p.getProductName(),
+                    p.getDescription(),
+                    p.getCategory(),
+                    String.format("%.2f", p.getPrice()),
+                    p.getQuantity(),
+                    sellerName);
+        }
+
+        System.out.println(line);
+    }
+
 
     private static void viewProducts() {
         try {
-            List<Product> products = ProductDAO.getAllProducts();
-            boolean anyAvailable = false;
+            while (true) {
+                System.out.println("\n--- View Products ---");
+                System.out.println("1. View All Products");
+                System.out.println("2. Search Product by Name");
+                System.out.println("3. View Products by Seller");
+                System.out.println("4. Go Back");
+                System.out.print("Choose an option: ");
 
-            System.out.println("\nAvailable Products:");
-            System.out.println("===========================================================================================================================");
-            System.out.printf("| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s |%n",
-                    "Sr. No", "Product Name", "Description", "Category", "Price", "Quantity");
-            System.out.println("===========================================================================================================================");
+                int choice;
+                if (!scanner.hasNextInt()) {
+                    scanner.next(); // Clear invalid input
+                    System.out.println("Invalid input! Please enter a number.");
+                    continue;
+                }
 
-            int index = 1;
-            for (Product p : products) {
-                if (p.getQuantity() > 0) {
-                    System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
-                            index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
-                    anyAvailable = true;
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        List<Product> allProducts = ProductDAO.getAllProducts();
+                        displayProducts(allProducts);
+                        break;
+
+                    case 2:
+                        System.out.print("Enter product name to search: ");
+                        String searchTerm = scanner.nextLine().trim();
+                        List<Product> searchedProducts = ProductDAO.getProductsByName(searchTerm);
+                        displayProducts(searchedProducts);
+                        break;
+
+                    case 3:
+                        System.out.print("Enter seller username: ");
+                        String sellerUsername = scanner.nextLine().trim();
+                        List<Product> sellerProducts = ProductDAO.getProductsBySellerName(sellerUsername);
+                        displayProducts(sellerProducts);
+                        break;
+
+                    case 4:
+                        return;
+
+                    default:
+                        System.out.println("Invalid choice. Try again.");
                 }
             }
-
-            if (!anyAvailable) {
-                System.out.println("|                                       No products available with stock right now.                                       |");
-            }
-
-            System.out.println("===========================================================================================================================");
         } catch (Exception e) {
             System.out.println("An error occurred while retrieving products: " + e.getMessage());
         }
     }
-
 
 
 
