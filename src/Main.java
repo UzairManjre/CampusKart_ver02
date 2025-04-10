@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
-
+import java.util.stream.Collectors;
 import static Database.ModeratorDAO.addModerator;
 import static Database.StudentDAO.addStudent;
 import static Database.StudentDAO.getStudentByUsername;
@@ -382,7 +382,12 @@ private static void login() {
     private static void buyProduct() {
         try {
             List<Product> products = ProductDAO.getAllProducts();
-            if (products.isEmpty()) {
+            List<Product> availableProducts = products.stream()
+                    .filter(p -> p.getQuantity() > 0)
+                    .collect(Collectors.toList());
+
+
+            if (availableProducts.isEmpty()) {
                 System.out.println("No products available.");
                 return;
             }
@@ -394,7 +399,7 @@ private static void login() {
             System.out.println("===========================================================================================================================");
 
             int index = 1;
-            for (Product p : products) {
+            for (Product p : availableProducts) {
                 System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
                         index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
             }
@@ -410,16 +415,12 @@ private static void login() {
             scanner.nextLine(); // Consume newline
 
             Product product = ProductDAO.getProductById(productId);
-            if (product == null) {
-                throw new ProductNotFoundException("Product with ID " + productId + " not found!");
+            if (product == null || product.getQuantity() <= 0) {
+                throw new ProductNotFoundException("Product with ID " + productId + " not found or out of stock!");
             }
 
             if (!(loggedInUser instanceof Student)) {
                 throw new UnauthorizedActionException("Only students can buy products.");
-            }
-
-            if (product.getQuantity() <= 0) {
-                throw new InsufficientStockException("Product is out of stock!");
             }
 
             System.out.print("Are you sure you want to purchase \"" + product.getProductName() + "\" worth ₹" + product.getPrice() + "? (yes/no): ");
@@ -448,6 +449,7 @@ private static void login() {
             System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
+
 
 
 
@@ -517,7 +519,9 @@ private static void login() {
                 throw new UnauthorizedActionException("You must be logged in to view your orders!");
             }
 
-            List<Transaction> orders = TransactionDAO.getUserTransactions(getStudentByUsername(loggedInUser.getUsername()).getClientId()); // Fetch transactions for the logged-in user
+            List<Transaction> orders = TransactionDAO.getUserTransactions(
+                    getStudentByUsername(loggedInUser.getUsername()).getClientId()
+            );
 
             if (orders.isEmpty()) {
                 System.out.println("\nYou have no orders.");
@@ -525,9 +529,22 @@ private static void login() {
             }
 
             System.out.println("\nYour Orders:");
+            System.out.println("===================================================================================");
+            System.out.printf("| %-20s | %-20s | %-20s | %-10s |%n",
+                    "Buyer", "Seller", "Product", "Price");
+            System.out.println("===================================================================================");
+
             for (Transaction t : orders) {
-                System.out.println(t);
+                String buyer = t.getBuyer().getUsername();
+                String seller = t.getSeller().getUsername();
+                String product = t.getProduct().getProductName();
+                double price = t.getProduct().getPrice();
+
+                System.out.printf("| %-20s | %-20s | %-20s | %-10.2f |%n",
+                        buyer, seller, product, price);
             }
+
+            System.out.println("===================================================================================");
 
         } catch (UnauthorizedActionException e) {
             System.out.println(e.getMessage());
@@ -535,6 +552,8 @@ private static void login() {
             System.out.println("An unexpected error occurred while retrieving orders: " + e.getMessage());
         }
     }
+
+
 
 
     // Function to view favorite products
@@ -547,23 +566,55 @@ private static void login() {
                 throw new UnauthorizedActionException("You must be logged in to add favourite products!");
             }
 
+            List<Product> products = ProductDAO.getAllProducts().stream()
+                    .filter(p -> p.getQuantity() > 0)
+                    .collect(Collectors.toList());
+
+            if (products.isEmpty()) {
+                System.out.println("\nNo products available to add to favourites.");
+                return;
+            }
+
+            System.out.println("\nAvailable Products:");
+            System.out.println("===========================================================================================================================");
+            System.out.printf("| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s |%n",
+                    "Sr. No", "Product Name", "Description", "Category", "Price", "Quantity");
+            System.out.println("===========================================================================================================================");
+
+            int index = 1;
+            for (Product p : products) {
+                System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
+                        index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
+            }
+
+            System.out.println("===========================================================================================================================");
+
             System.out.print("Enter Product ID to add to favourites: ");
+            if (!scanner.hasNextInt()) {
+                scanner.next(); // Clear invalid input
+                throw new InvalidInputException("Invalid input! Please enter a valid Product ID.");
+            }
+
             int productId = scanner.nextInt();
-            scanner.nextLine();
+            scanner.nextLine(); // Consume newline
 
             FavouriteDAO favouriteDAO = new FavouriteDAO();
-            if (favouriteDAO.addFavourite(getStudentByUsername(loggedInUser.getUsername()).getClientId(), productId)) {
+            int studentId = getStudentByUsername(loggedInUser.getUsername()).getClientId();
+
+            if (favouriteDAO.addFavourite(studentId, productId)) {
                 System.out.println("Product added to favourites successfully!");
             } else {
                 System.out.println("Failed to add product to favourites.");
             }
 
-        } catch (UnauthorizedActionException e) {
+        } catch (UnauthorizedActionException | InvalidInputException e) {
             System.out.println(e.getMessage());
         } catch (Exception e) {
             System.out.println("An error occurred while adding to favourites: " + e.getMessage());
         }
     }
+
+
 
     // Function to remove a product from favourites
     private static void removeFromFavourites() {
@@ -596,7 +647,9 @@ private static void login() {
             }
 
             FavouriteDAO favouriteDAO = new FavouriteDAO();
-            List<Product> favourites = favouriteDAO.getFavouriteProductsByClient(Objects.requireNonNull(getStudentByUsername(loggedInUser.getUsername())).getClientId());
+            List<Product> favourites = favouriteDAO.getFavouriteProductsByClient(
+                    Objects.requireNonNull(getStudentByUsername(loggedInUser.getUsername())).getClientId()
+            );
 
             if (favourites.isEmpty()) {
                 System.out.println("\nYou have no favourite products.");
@@ -604,9 +657,16 @@ private static void login() {
             }
 
             System.out.println("\nYour Favourite Products:");
+            System.out.println("==========================================================================================");
+            System.out.printf("| %-6s | %-25s | %-10s | %-40s |%n", "ID", "Name", "Price", "Description");
+            System.out.println("==========================================================================================");
+
             for (Product p : favourites) {
-                System.out.println("ID: " + p.getProductId() + ", Name: " + p.getProductName() + ", Price: " + p.getPrice() + ", Description: " + p.getDescription());
+                System.out.printf("| %-6d | %-25s | %-10.2f | %-40s |%n",
+                        p.getProductId(), p.getProductName(), p.getPrice(), p.getDescription());
             }
+
+            System.out.println("==========================================================================================");
 
         } catch (UnauthorizedActionException e) {
             System.out.println(e.getMessage());
@@ -614,6 +674,7 @@ private static void login() {
             System.out.println("An unexpected error occurred while retrieving favourite products: " + e.getMessage());
         }
     }
+
 
 
     private static void viewAllTransactions() {

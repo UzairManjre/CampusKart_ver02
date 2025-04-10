@@ -68,4 +68,5 @@ public class Transaction {
                 ", Product=" + product.getProductName() +
                 '}';
     }
+
 }
