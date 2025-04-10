@@ -171,6 +171,38 @@ public class ProductDAO {
         }
         return products;
     }
+    public static List<Product> getProductsByName(String name) {
+        List<Product> products = new ArrayList<>();
+        String query = "SELECT * FROM Products WHERE pname LIKE ?";
 
+        try (Connection conn = DatabaseConnection.initializeDB();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, "%" + name + "%"); // Wildcard search
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                int sellerId = rs.getInt("s_id");
+                Student seller = getStudentById(sellerId);
+
+                if (seller != null) {
+                    Product product = new Product(
+                            rs.getInt("pr_id"),
+                            rs.getString("pname"),
+                            rs.getString("pdesc"),
+                            rs.getDouble("p_price"),
+                            rs.getString("category"),
+                            rs.getInt("qty"),
+                            seller
+                    );
+                    products.add(product);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error searching products by name: " + e.getMessage());
+        }
+        return products;
+    }
 
 }
