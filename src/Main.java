@@ -623,15 +623,35 @@ private static void login() {
                 throw new UnauthorizedActionException("You must be logged in to remove favourite products!");
             }
 
-            System.out.print("Enter Product ID to remove from favourites: ");
-            int productId = scanner.nextInt();
-            scanner.nextLine();
-
+            Student student = getStudentByUsername(loggedInUser.getUsername());
             FavouriteDAO favouriteDAO = new FavouriteDAO();
-            if (favouriteDAO.removeFavourite(Objects.requireNonNull(getStudentByUsername(loggedInUser.getUsername())).getClientId(), productId)) {
+            List<Product> favourites = favouriteDAO.getFavouriteProductsByClient(student.getClientId());
+
+            if (favourites.isEmpty()) {
+                System.out.println("\nYou have no favourite products to remove.");
+                return;
+            }
+
+            // Display in tabular format
+            System.out.println("\nYour Favourite Products:");
+            System.out.println("=================================================================================================================");
+            System.out.printf("| %-6s | %-25s | %-10s | %-60s |%n", "ID", "Name", "Price", "Description");
+            System.out.println("=================================================================================================================");
+            for (Product p : favourites) {
+                System.out.printf("| %-6d | %-25s | %-10.2f | %-60s |%n",
+                        p.getProductId(), p.getProductName(), p.getPrice(), p.getDescription());
+            }
+            System.out.println("=================================================================================================================");
+
+            System.out.print("Enter the Product ID you want to remove from favourites: ");
+            int productId = scanner.nextInt();
+            scanner.nextLine(); // Clear buffer
+
+            boolean removed = favouriteDAO.removeFavourite(student.getClientId(), productId);
+            if (removed) {
                 System.out.println("Product removed from favourites successfully!");
             } else {
-                System.out.println("Failed to remove product from favourites.");
+                System.out.println("Failed to remove product from favourites. Please check the Product ID.");
             }
 
         } catch (UnauthorizedActionException e) {
@@ -640,6 +660,7 @@ private static void login() {
             System.out.println("An error occurred while removing from favourites: " + e.getMessage());
         }
     }
+
     private static void viewFavouriteProducts() {
         try {
             if (loggedInUser == null) {
