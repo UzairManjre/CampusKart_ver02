@@ -260,8 +260,44 @@ private static void login() {
     private static void viewProducts() {
         try {
             List<Product> products = ProductDAO.getAllProducts();
+            boolean anyAvailable = false;
+
+            System.out.println("\nAvailable Products:");
+            System.out.println("===========================================================================================================================");
+            System.out.printf("| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s |%n",
+                    "Sr. No", "Product Name", "Description", "Category", "Price", "Quantity");
+            System.out.println("===========================================================================================================================");
+
+            int index = 1;
+            for (Product p : products) {
+                if (p.getQuantity() > 0) {
+                    System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
+                            index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
+                    anyAvailable = true;
+                }
+            }
+
+            if (!anyAvailable) {
+                System.out.println("|                                       No products available with stock right now.                                       |");
+            }
+
+            System.out.println("===========================================================================================================================");
+        } catch (Exception e) {
+            System.out.println("An error occurred while retrieving products: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+    private static void buyProduct() {
+        try {
+            List<Product> products = ProductDAO.getAllProducts();
             if (products.isEmpty()) {
-                System.out.println("\nNo products available.");
+                System.out.println("No products available.");
                 return;
             }
 
@@ -276,22 +312,9 @@ private static void login() {
                 System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
                         index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
             }
-
             System.out.println("===========================================================================================================================");
-        } catch (Exception e) {
-            System.out.println("An error occurred while retrieving products: " + e.getMessage());
-        }
-    }
 
-
-
-
-
-
-    private static void buyProduct() {
-        try {
             System.out.print("Enter Product ID to buy: ");
-
             if (!scanner.hasNextInt()) {
                 scanner.next(); // Clear invalid input
                 throw new InvalidInputException("Invalid input! Please enter a valid Product ID.");
@@ -313,7 +336,12 @@ private static void login() {
                 throw new InsufficientStockException("Product is out of stock!");
             }
 
-            // Proceed with the purchase
+            System.out.print("Are you sure you want to purchase \"" + product.getProductName() + "\" worth ₹" + product.getPrice() + "? (yes/no): ");
+            String confirmation = scanner.nextLine().trim().toLowerCase();
+            if (!confirmation.equals("yes")) {
+                System.out.println("Purchase cancelled.");
+                return;
+            }
 
             Student buyer = getStudentByUsername(loggedInUser.getUsername());
             Student seller = getStudentByUsername(product.getSeller().getUsername());
@@ -322,12 +350,11 @@ private static void login() {
             addTransaction(transaction);
             TransactionDAO.addTransaction(productId, buyer.getClientId(), seller.getClientId());
 
-
             // Decrease quantity
             product.setQuantity(product.getQuantity() - 1);
             ProductDAO.updateProductQuantity(productId, product.getQuantity());
 
-            System.out.println("You bought " + product.getProductName() + "!");
+            System.out.println("You bought \"" + product.getProductName() + "\" successfully!");
 
         } catch (ProductNotFoundException | UnauthorizedActionException | InvalidInputException | InsufficientStockException e) {
             System.out.println(e.getMessage());
@@ -335,6 +362,7 @@ private static void login() {
             System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
+
 
 
     private static void addProduct() {
