@@ -33,7 +33,7 @@ public class DatabaseConnection {
         return conn;
     }
 
-    private static boolean loadConfig() {
+    public static boolean loadConfig() {
         File file = new File(CONFIG_FILE);
         if (!file.exists()) {
             return false;
@@ -53,8 +53,10 @@ public class DatabaseConnection {
     public static void saveConfig() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter MySQL Database URL: ");
-        URL = scanner.nextLine();
+        // Set default URL
+        System.out.print("Enter MySQL Database URL (default: jdbc:mysql://localhost:3306/): ");
+        String inputURL = scanner.nextLine();
+        URL = inputURL.isEmpty() ? "jdbc:mysql://localhost:3306/" : inputURL;
 
         System.out.print("Enter MySQL Username: ");
         USER = scanner.nextLine();
