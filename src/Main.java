@@ -297,40 +297,44 @@ private static void login() {
                 System.out.println("4. Go Back");
                 System.out.print("Choose an option: ");
 
-
+                // Handle non-integer input for main menu
                 while (!scanner.hasNextInt()) {
-                    scanner.next(); // discard invalid input
-                    System.out.print("Please enter a valid number: ");
+                    scanner.next(); // Discard invalid input
+                    System.out.print("Please enter a valid number (1-4): ");
                 }
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // consume leftover newline
-
+                scanner.nextLine(); // Consume leftover newline
 
                 switch (choice) {
                     case 1:
                         List<Product> allProducts = ProductDAO.getAllProducts();
-
                         if (allProducts.isEmpty()) {
                             System.out.println("No products found.");
                             break;
                         }
 
                         // Sorting options
-                        System.out.println("\nSort by:");
-                        System.out.println("1. Name (A-Z)");
-                        System.out.println("2. Price (Low to High)");
-                        System.out.println("3. Price (High to Low)");
-                        System.out.println("4. No Sorting");
-                        System.out.print("Choose a sorting option: ");
+                        int sortChoice;
+                        do {
+                            System.out.println("\nSort by:");
+                            System.out.println("1. Name (A-Z)");
+                            System.out.println("2. Price (Low to High)");
+                            System.out.println("3. Price (High to Low)");
+                            System.out.println("4. No Sorting");
+                            System.out.print("Choose a sorting option (1-4): ");
 
-                        System.out.print("Choose an option: ");
-                        while (!scanner.hasNextInt()) {
-                            scanner.next(); // discard invalid input
-                            System.out.print("Please enter a valid number: ");
-                        }
-                        int sortChoice = scanner.nextInt();
-                        scanner.nextLine(); // consume leftover newline
+                            // Validate sorting choice input
+                            while (!scanner.hasNextInt()) {
+                                scanner.next(); // Discard invalid input
+                                System.out.print("Please enter a valid number (1-4): ");
+                            }
+                            sortChoice = scanner.nextInt();
+                            scanner.nextLine(); // Consume leftover newline
 
+                            if (sortChoice < 1 || sortChoice > 4) {
+                                System.out.println("Invalid choice! Please enter 1-4.");
+                            }
+                        } while (sortChoice < 1 || sortChoice > 4); // Reprompt until valid
 
                         switch (sortChoice) {
                             case 1:
@@ -343,11 +347,8 @@ private static void login() {
                                 allProducts.sort(Comparator.comparingDouble(Product::getPrice).reversed());
                                 break;
                             case 4:
-                                break;
-                            default:
-                                System.out.println("Invalid sort option. Showing default order.");
+                                break; // No sorting
                         }
-
                         displayProducts(allProducts);
                         break;
 
@@ -366,18 +367,16 @@ private static void login() {
                         break;
 
                     case 4:
-                        return;
+                        return; // Exit the method
 
                     default:
-                        System.out.println("Invalid choice. Try again.");
+                        System.out.println("Invalid choice. Please enter 1-4.");
                 }
             }
         } catch (Exception e) {
             System.out.println("An error occurred while retrieving products: " + e.getMessage());
         }
     }
-
-
 
 
     private static void buyProduct() {
