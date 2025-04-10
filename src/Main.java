@@ -11,6 +11,8 @@ import campuskart_ver02.classes.Product;
 import campuskart_ver02.classes.Storage;
 import campuskart_ver02.classes.Student;
 import campuskart_ver02.classes.Transaction;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -285,7 +287,6 @@ private static void login() {
         System.out.println(line);
     }
 
-
     private static void viewProducts() {
         try {
             while (true) {
@@ -296,19 +297,57 @@ private static void login() {
                 System.out.println("4. Go Back");
                 System.out.print("Choose an option: ");
 
-                int choice;
-                if (!scanner.hasNextInt()) {
-                    scanner.next(); // Clear invalid input
-                    System.out.println("Invalid input! Please enter a number.");
-                    continue;
-                }
 
-                choice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                while (!scanner.hasNextInt()) {
+                    scanner.next(); // discard invalid input
+                    System.out.print("Please enter a valid number: ");
+                }
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // consume leftover newline
+
 
                 switch (choice) {
                     case 1:
                         List<Product> allProducts = ProductDAO.getAllProducts();
+
+                        if (allProducts.isEmpty()) {
+                            System.out.println("No products found.");
+                            break;
+                        }
+
+                        // Sorting options
+                        System.out.println("\nSort by:");
+                        System.out.println("1. Name (A-Z)");
+                        System.out.println("2. Price (Low to High)");
+                        System.out.println("3. Price (High to Low)");
+                        System.out.println("4. No Sorting");
+                        System.out.print("Choose a sorting option: ");
+
+                        System.out.print("Choose an option: ");
+                        while (!scanner.hasNextInt()) {
+                            scanner.next(); // discard invalid input
+                            System.out.print("Please enter a valid number: ");
+                        }
+                        int sortChoice = scanner.nextInt();
+                        scanner.nextLine(); // consume leftover newline
+
+
+                        switch (sortChoice) {
+                            case 1:
+                                allProducts.sort(Comparator.comparing(Product::getProductName, String.CASE_INSENSITIVE_ORDER));
+                                break;
+                            case 2:
+                                allProducts.sort(Comparator.comparingDouble(Product::getPrice));
+                                break;
+                            case 3:
+                                allProducts.sort(Comparator.comparingDouble(Product::getPrice).reversed());
+                                break;
+                            case 4:
+                                break;
+                            default:
+                                System.out.println("Invalid sort option. Showing default order.");
+                        }
+
                         displayProducts(allProducts);
                         break;
 
@@ -337,8 +376,6 @@ private static void login() {
             System.out.println("An error occurred while retrieving products: " + e.getMessage());
         }
     }
-
-
 
 
 
