@@ -2,6 +2,7 @@
   <library name="CampusKart_ver02">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/dist/CampusKart_ver02.jar!/" />
+      <root url="jar://$USER_HOME$/Desktop/college/sem 4/Java core Lab/mysql-connector-j-9.2.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

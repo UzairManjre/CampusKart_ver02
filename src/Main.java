@@ -260,20 +260,31 @@ private static void login() {
     private static void viewProducts() {
         try {
             List<Product> products = ProductDAO.getAllProducts();
-
             if (products.isEmpty()) {
                 System.out.println("\nNo products available.");
                 return;
             }
 
             System.out.println("\nAvailable Products:");
+            System.out.println("===========================================================================================================================");
+            System.out.printf("| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s |%n",
+                    "Sr. No", "Product Name", "Description", "Category", "Price", "Quantity");
+            System.out.println("===========================================================================================================================");
+
+            int index = 1;
             for (Product p : products) {
-                System.out.println(p.getProductId() + ". " + p.getProductName() + " - " + p.getPrice() + " - " + p.getQuantity());
+                System.out.printf("| %-6d | %-20s | %-50s | %-12s | %-8.2f | %-8d |%n",
+                        index++, p.getProductName(), p.getDescription(), p.getCategory(), p.getPrice(), p.getQuantity());
             }
+
+            System.out.println("===========================================================================================================================");
         } catch (Exception e) {
             System.out.println("An error occurred while retrieving products: " + e.getMessage());
         }
     }
+
+
+
 
 
 
