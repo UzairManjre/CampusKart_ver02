@@ -692,7 +692,11 @@ private static void login() {
 
             System.out.println("\nAll Transactions:");
             for (Transaction t : transactions) {
-                System.out.println(t);
+                System.out.println("Product: " + t.getProduct().getProductName());
+                System.out.println("Price: ₹" + t.getProduct().getPrice());
+                System.out.println("Buyer: " + t.getBuyer().getUsername());
+                System.out.println("Seller: " + t.getSeller().getUsername());
+                System.out.println("-----");
             }
 
         } catch (UnauthorizedActionException e) {
