@@ -259,10 +259,15 @@ private static void login() {
         }
     }
     private static void displayProducts(List<Product> products) {
+
         if (products == null || products.isEmpty()) {
             System.out.println("No products found.");
             return;
         }
+        products = ProductDAO.getAllProducts();
+        List<Product> availableProducts = products.stream()
+                .filter(p -> p.getQuantity() > 0)
+                .collect(Collectors.toList());
 
         String format = "| %-6s | %-20s | %-50s | %-12s | %-8s | %-8s | %-15s |%n";
         String line = "+--------+----------------------+----------------------------------------------------+--------------+----------+----------+-----------------+";
@@ -272,7 +277,7 @@ private static void login() {
         System.out.printf(format, "ID", "Product Name", "Description", "Category", "Price", "Quantity", "Seller");
         System.out.println(line);
 
-        for (Product p : products) {
+        for (Product p : availableProducts) {
             String sellerName = (p.getSeller() != null) ? p.getSeller().getUsername() : "N/A";
             System.out.printf(format,
                     p.getProductId(),
